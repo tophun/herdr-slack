@@ -1,0 +1,254 @@
+{
+  "id": "root",
+  "type": "column",
+  "children": [
+    {
+      "id": "topbar",
+      "type": "block",
+      "content": {
+        "mod": "slack",
+        "props": {
+          "view": "topbar"
+        }
+      },
+      "size": {
+        "px": 44
+      },
+      "window_drag": true
+    },
+    {
+      "id": "body",
+      "type": "row",
+      "children": [
+        {
+          "id": "rail",
+          "type": "block",
+          "content": {
+            "mod": "slack",
+            "props": {
+              "view": "rail"
+            }
+          },
+          "size": {
+            "px": 72
+          }
+        },
+        {
+          "id": "workspace",
+          "type": "row",
+          "children": [
+            {
+              "id": "sidebar",
+              "type": "column",
+              "children": [
+                {
+                  "id": "channels",
+                  "type": "block",
+                  "content": {
+                    "mod": "slack",
+                    "props": {
+                      "view": "channels"
+                    }
+                  }
+                }
+              ],
+              "size": {
+                "px": 300
+              },
+              "min": 220,
+              "max": 480
+            },
+            {
+              "id": "work",
+              "type": "column",
+              "children": [
+                {
+                  "id": "header",
+                  "type": "block",
+                  "content": {
+                    "mod": "slack",
+                    "props": {
+                      "view": "header"
+                    }
+                  },
+                  "size": {
+                    "px": 92
+                  }
+                },
+                {
+                  "id": "work-body",
+                  "type": "row",
+                  "children": [
+                    {
+                      "id": "conversation-view",
+                      "type": "stack",
+                      "children": [
+                        {
+                          "id": "main",
+                          "type": "block",
+                          "content": {
+                            "tab": "active",
+                            "pane": {
+                              "background": "background",
+                              "border": {
+                                "width": 1,
+                                "color": "background"
+                              },
+                              "focus": {
+                                "width": 1,
+                                "color": "accent"
+                              },
+                              "radius": 0,
+                              "gap": 2
+                            }
+                          },
+                          "background": "background"
+                        },
+                        {
+                          "id": "conversation-page",
+                          "type": "column",
+                          "children": [
+                            {
+                              "id": "conversation-chat",
+                              "type": "block",
+                              "content": {
+                                "mod": "slack-chat",
+                                "props": {
+                                  "presentation": true
+                                }
+                              }
+                            }
+                          ],
+                          "background": "background",
+                          "border": {
+                            "width": 1,
+                            "color": "background"
+                          },
+                          "radius": 0
+                        }
+                      ],
+                      "active": "main"
+                    },
+                    {
+                      "id": "panel",
+                      "type": "column",
+                      "children": [
+                        {
+                          "id": "panel-body",
+                          "type": "stack",
+                          "children": [
+                            {
+                              "id": "files",
+                              "type": "block",
+                              "content": {
+                                "mod": "files"
+                              }
+                            },
+                            {
+                              "id": "changes",
+                              "type": "block",
+                              "content": {
+                                "mod": "changes"
+                              }
+                            }
+                          ],
+                          "active": "files"
+                        }
+                      ],
+                      "size": {
+                        "px": 368
+                      },
+                      "min": 280,
+                      "max": 900,
+                      "hidden": true
+                    }
+                  ]
+                }
+              ],
+              "resizable": false
+            }
+          ],
+          "border": {
+            "width": 1,
+            "color": "#ffffff1f"
+          },
+          "radius": 8,
+          "resizable": true
+        },
+        {
+          "id": "pad-right",
+          "type": "row",
+          "children": [],
+          "size": {
+            "px": 6
+          }
+        }
+      ],
+      "resizable": false
+    },
+    {
+      "id": "pad-bottom",
+      "type": "row",
+      "children": [],
+      "size": {
+        "px": 6
+      }
+    }
+  ],
+  "background": "#9C0000",
+  "theme": "graphite",
+  "colors": {
+    "accent": "#1d9bd1",
+    "accent_foreground": "#ffffff",
+    "ansi0": "#1a1d21",
+    "ansi1": "#e01e5a",
+    "ansi10": "#5fd3a0",
+    "ansi11": "#f5cc63",
+    "ansi12": "#5ab9e8",
+    "ansi13": "#d9a4f2",
+    "ansi14": "#7dd8f5",
+    "ansi15": "#ffffff",
+    "ansi2": "#2bac76",
+    "ansi3": "#ecb22e",
+    "ansi4": "#1d9bd1",
+    "ansi5": "#c27ee8",
+    "ansi6": "#36c5f0",
+    "ansi7": "#d1d2d3",
+    "ansi8": "#616061",
+    "ansi9": "#f05a85",
+    "background": "#1a1d21",
+    "blocked": "#e01e5a",
+    "border": "#35373b",
+    "canvas": "#3a1430",
+    "chrome": "#2a0f2c",
+    "cursor": "#d1d2d3",
+    "dim": "#ababad",
+    "done": "#ecb22e",
+    "foreground": "#d1d2d3",
+    "hover": "#27292d",
+    "idle": "#868686",
+    "input": "#565856",
+    "muted": "#e3d7e6",
+    "popover": "#222529",
+    "raised": "#2c2d30",
+    "selected": "#1164a3",
+    "selection": "#1164a366",
+    "solid": "#007a5a",
+    "solid_foreground": "#ffffff",
+    "surface": "#222529",
+    "unknown": "#868686",
+    "working": "#2bac76"
+  },
+  "ui_font": "Lato",
+  "terminal_padding": [
+    10,
+    16
+  ],
+  "titlebar": "none",
+  "traffic_lights": [
+    18,
+    16
+  ],
+  "preview": "layouts/slack.svg",
+  "toast": "slack-toast"
+}
