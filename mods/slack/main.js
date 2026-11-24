@@ -19,7 +19,7 @@ import { renderChannelMenu, renderSectionMenu, renderWorkspaceMenu, renderNameDi
 import { watchRepos } from "./repos.js";
 import { renderNewChannel, initNewChannel } from "./newchannel.js";
 import { renderThemePanel, initThemePanel } from "./themepanel.js";
-import { applyBackground } from "./theme.js";
+import { applyBackground, isLight, slackTheme } from "./theme.js";
 import { loadDemo } from "./demo.js";
 import { handleImageRequest } from "./spaceimage.js";
 
@@ -62,8 +62,15 @@ export default class Slack extends View {
       });
       cx.timer.every(SYNC_MS, (cx) => handleImageRequest(this, cx));
       cx.spawn(async () => { await loadDemo(); });
-      // The window background follows the saved theme (it may have been chosen elsewhere or before a restart).
-      cx.spawn(async () => { await applyBackground(); });
+      // The window background follows the saved theme (it may have been chosen elsewhere or before a restart)
+      // and the light/dark appearance, which can flip at any time: repaint whenever it differs from the last paint.
+      this.bgLight = null;
+      cx.timer.every(SYNC_MS, (cx) => {
+        const light = isLight(theme());
+        if (light === this.bgLight) return;
+        this.bgLight = light;
+        cx.spawn(async () => { await applyBackground(slackTheme(), light); });
+      });
     }
     if (this.view === "header") cx.timer.every(SYNC_MS, (cx) => syncView(this, cx));
     // 사이드바가 채널(스페이스)을 저장소별로 묶으려면 폴더마다 git 저장소를 알아야 한다.

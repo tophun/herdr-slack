@@ -5,7 +5,7 @@ import { div } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { spaces, panes, agents, run, layout, home, openOverlay } from "herdr";
 import { programAvatar } from "./parts.js";
-import { icon, white } from "./parts.js";
+import { icon, strong } from "./parts.js";
 import { agentPane, chatShown, selectView } from "./chatview.js";
 import { cleanTitle, channelNames, tabTitle } from "./look.js";
 import { channelMenuOverlay } from "./sectionmenu.js";
@@ -40,8 +40,8 @@ function topic(tab) {
 
 function toolButton(t, id, iconName, tip, on, action) {
   return div().id(id).size(28).flex_none().flex().items_center().justify_center().rounded(6).cursor_pointer().tooltip(tip)
-    .text_color(on ? white(t) : t.muted).when(on, (el) => el.bg(t.raised))
-    .hover((s) => s.bg(t.raised).text_color(white(t)))
+    .text_color(on ? strong(t) : t.muted).when(on, (el) => el.bg(t.raised))
+    .hover((s) => s.bg(t.raised).text_color(strong(t)))
     .on_click(action).child(icon(iconName, 18));
 }
 
@@ -52,17 +52,17 @@ function channelTab(t, id, iconName, label, on, action, { lead = null, onRight =
     .when(Boolean(onMiddle), (el) => el.on_mouse_down("middle", (_e, cx) => { cx.stop_propagation(); onMiddle(); }))
     .when(Boolean(tip), (el) => el.tooltip(tip))
     .child(h_flex().px(4).pb(8).gap(6).items_center().text_size(14).font_semibold()
-      .text_color(on ? white(t) : t.muted).hover((s) => s.text_color(white(t)))
+      .text_color(on ? strong(t) : t.muted).hover((s) => s.text_color(strong(t)))
       .child(lead ?? icon(iconName, 15)).child(div().min_w(0).truncate().child(label)))
-    .child(div().h(2).w_full().rounded_t(2).bg(on ? white(t) : "#00000000"));
+    .child(div().h(2).w_full().rounded_t(2).bg(on ? strong(t) : "#00000000"));
 }
 
 // 채팅 | 터미널 두 칸 스위치(지금 탭에 에이전트가 있을 때).
 function viewSwitch(view, t, chat) {
   const seg = (mode, label, on) => div().id(`view-${mode}`).px(10).h(24).flex().items_center().rounded(4)
     .cursor_pointer().text_size(13).font_bold()
-    .bg(on ? t.raised : "#00000000").text_color(on ? white(t) : t.dim)
-    .hover((s) => s.text_color(white(t)))
+    .bg(on ? t.raised : "#00000000").text_color(on ? strong(t) : t.dim)
+    .hover((s) => s.text_color(strong(t)))
     .on_click((_e, cx) => selectView(view, mode, cx)).child(label);
   return h_flex().flex_none().p(2).gap(2).rounded(6).border_1().border_color(t.border)
     .child(seg("chat", "채팅", chat)).child(seg("terminal", "터미널", !chat));
@@ -94,8 +94,8 @@ export function renderHeader(view, t) {
       .child(h_flex().id("channel-title").flex_none().max_w(360).px(6).py(3).gap(4).items_center().rounded(6).cursor_pointer()
         .hover((s) => s.bg(t.raised))
         .when(Boolean(space), (el) => el.on_click(() => openOverlay(channelMenuOverlay(space.id, null))).tooltip("채널 메뉴"))
-        .child(div().text_color(white(t)).child(icon("hash", 18)))
-        .child(div().min_w(0).truncate().text_size(18).font_bold().text_color(white(t))
+        .child(div().text_color(strong(t)).child(icon("hash", 18)))
+        .child(div().min_w(0).truncate().text_size(18).font_bold().text_color(strong(t))
           .child(channelName ?? "채널 없음"))
         .child(div().text_color(t.muted).child(icon("chevron-down", 14))))
       .child(div().id("channel-topic").flex_1().min_w(0).truncate().text_size(13).text_color(t.dim)
@@ -103,7 +103,7 @@ export function renderHeader(view, t) {
       .child(h_flex().flex_none().gap(6).items_center()
         .when(agent, (el) => el.child(viewSwitch(view, t, chat)))
         .child(h_flex().id("members").flex_none().h(28).px(6).gap(4).items_center().rounded(6).cursor_pointer()
-          .text_color(t.muted).hover((s) => s.bg(t.raised).text_color(white(t))).tooltip("이 채널의 에이전트")
+          .text_color(t.muted).hover((s) => s.bg(t.raised).text_color(strong(t))).tooltip("이 채널의 에이전트")
           .on_click(() => run("mod.open", { name: "picker" }))
           .child(icon("users", 17)).child(div().text_size(14).child(String(agents().filter((a) => a.space === space?.id).length))))
         .child(toolButton(t, "split", "split", "오른쪽으로 나누기 (⌘D)", false, () => run("pane.split", { direction: "right" })))
@@ -126,7 +126,7 @@ export function renderHeader(view, t) {
       .child(channelTab(t, "tab-files", "files", "파일 및 링크", isShown(PANEL_NODE), () => run("layout.toggle", { id: PANEL_NODE })))
       // 탭들과 같은 틀(글자 줄 pb 8 + 아래 2px 막대 자리)이라 + 가 탭 글자와 같은 높이에 선다.
       .child(v_flex().id("tab-add").h_full().flex_none().justify_end().cursor_pointer().text_color(t.muted)
-        .hover((s) => s.text_color(white(t))).tooltip("새 세션 (이 채널에 탭 추가)")
+        .hover((s) => s.text_color(strong(t))).tooltip("새 세션 (이 채널에 탭 추가)")
         .on_click(() => openOverlay(newChannelOverlay("tab")))
         .child(h_flex().px(4).pb(8).gap(6).items_center().text_size(14).font_semibold()
           .child(icon("plus", 15)).child(div().w(0).child("\u200b"))) // 보이지 않는 글자로 탭 글자와 같은 줄 높이를 만든다

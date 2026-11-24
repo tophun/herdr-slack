@@ -6,8 +6,8 @@ import { shared } from "herdr";
 
 // Discord: round 40px avatars, blurple APP badge. Slack (layout "slack"): 36px rounded squares, grey APP badge.
 const STYLES = {
-  discord: { avatar: 40, gutter: 16, radius: (s) => s / 2, badgeBg: (t) => t.accent, badgeFg: (t) => white(t) },
-  slack: { avatar: 36, gutter: 8, radius: () => 8, badgeBg: () => "#ffffff1f", badgeFg: (t) => t.muted },
+  discord: { avatar: 40, gutter: 16, radius: (s) => s / 2, badgeBg: (t) => t.accent, badgeFg: (t) => t.accent_foreground },
+  slack: { avatar: 36, gutter: 8, radius: () => 8, badgeBg: (t) => (isLight(t) ? "#1d1c1d14" : "#ffffff1f"), badgeFg: (t) => t.muted },
 };
 const style = () => (shared("layout") === "slack" ? STYLES.slack : STYLES.discord);
 
@@ -21,25 +21,36 @@ export function authorOf(entry) {
   return null;
 }
 
-const white = (t) => t.ansi15 ?? t.foreground;
-// Claude 의 주황. 다른 에이전트는 프로그램 색(없으면 흰색).
+// 바탕이 밝은 테마인가(슬랙 라이트 모드). 바탕색의 밝기로 판단한다.
+let lastBg, lastLight;
+function isLight(t) {
+  if (t.background === lastBg) return lastLight; // 렌더마다 여러 번 불리니 바탕이 같으면 다시 계산하지 않는다.
+  lastBg = t.background;
+  const hex = String(t.background ?? "").replace(/^#/, "");
+  if (!/^[0-9a-f]{6}/i.test(hex)) return (lastLight = false);
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  return (lastLight = 0.299 * r + 0.587 * g + 0.114 * b > 140);
+}
+// 가장 진한 글자(이름, 날짜, 제목). 다크에선 흰색(ansi15), 라이트에선 본문색. ansi15 는 라이트 터미널에서 회색이다.
+export const strong = (t) => (isLight(t) ? t.foreground : t.ansi15 ?? t.foreground);
+// Claude 의 주황. 다른 에이전트는 프로그램 색(없으면 진한 글자색).
 const CLAUDE_ORANGE = "#d97757";
 export const nameColor = (t, program) => /claude/i.test(`${program?.key ?? ""} ${program?.name ?? ""}`) ? CLAUDE_ORANGE
-  : program?.color ?? program?.tile ?? white(t);
+  : program?.color ?? program?.tile ?? strong(t);
 
 export function programFace(t, program, size, radius) {
   const glyph = Math.round(size * 0.6);
   const art = !program?.icon ? div().text_size(size * 0.45).font_semibold().child((program?.name ?? "A").slice(0, 1))
-    : program.tint ? svg(program.icon).size(glyph).text_color(program.color ?? white(t))
+    : program.tint ? svg(program.icon).size(glyph).text_color(program.color ?? t.accent_foreground)
       : image(program.icon).w(glyph).h(glyph);
   return div().size(size).flex_none().rounded(radius).flex().items_center().justify_center()
-    .bg(program?.tile ?? t.accent).text_color(white(t)).child(art);
+    .bg(program?.tile ?? t.accent).text_color(t.accent_foreground).child(art);
 }
 
 export function userFace(t, name, size, radius, picture = null) {
   if (picture) return image(picture).size(size).flex_none().rounded(radius);
   return div().size(size).flex_none().rounded(radius).flex().items_center().justify_center()
-    .bg(t.accent).text_size(16).font_semibold().text_color(white(t))
+    .bg(t.accent).text_size(16).font_semibold().text_color(t.accent_foreground)
     .child(Array.from(name)[0]?.toUpperCase() ?? "?");
 }
 
@@ -55,7 +66,7 @@ export function messageRow(t, { author, head, at, userName, userImage = null, pr
     .child(div().w(st.avatar).flex_none().when(head, (el) => el.mt(2).child(avatar)))
     .child(v_flex().flex_1().min_w(0).gap(2)
       .when(head, (el) => el.child(h_flex().gap(6).items_center()
-        .child(div().text_size(15).font_semibold().text_color(agent ? nameColor(t, program) : white(t)).child(name))
+        .child(div().text_size(15).font_semibold().text_color(agent ? nameColor(t, program) : strong(t)).child(name))
         .when(agent, (row) => row.child(div().px(4).h(15).flex().items_center().rounded(3).bg(st.badgeBg(t))
           .text_size(10).font_semibold().text_color(st.badgeFg(t)).child("APP")))
         .when(Number.isFinite(at), (row) => row.child(div().text_size(12).text_color(t.dim).child(clock(at))))))
@@ -112,7 +123,7 @@ export function dateDivider(t, ms, id) {
     return h_flex().id(id).w_full().mb(10).items_center()
       .child(line())
       .child(div().flex_none().px(14).h(28).flex().items_center().rounded_full().border_1().border_color(t.border)
-        .bg(t.background).text_size(13).font_bold().text_color(white(t)).child(label))
+        .bg(t.background).text_size(13).font_bold().text_color(strong(t)).child(label))
       .child(line());
   }
   return h_flex().id(id).w_full().mb(10).gap(8).items_center()
@@ -133,7 +144,7 @@ export function slackTyping(t, { active, program, detail, waiting, open, canOpen
     .when(active && canOpen, (el) => el.cursor_pointer().on_click(onToggle).hover((s) => s.text_color(t.foreground)))
     .when(active, (el) => el
       .child(waiting ? line(t.blocked, t.blocked)
-        : shimmerBox(line(t.dim, t.muted), () => line(t.muted, white(t)), textWidth(`${name} ${words}`, 12), gen, "glow-typing", running))
+        : shimmerBox(line(t.dim, t.muted), () => line(t.muted, strong(t)), textWidth(`${name} ${words}`, 12), gen, "glow-typing", running))
       .when(Boolean(detail) && !waiting, (row) => row.child(div().flex_1().min_w(0).truncate().child(`· ${detail}`)))
       .when(!detail || waiting, (row) => row.child(div().flex_1()))
       .when(canOpen, (row) => row.child(div().flex_none().child(open ? "상세 닫기" : "상세 보기"))));

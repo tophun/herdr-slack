@@ -42,7 +42,7 @@ import { ChatAttention } from "./attention.js";
 import { IdentifyFeedback, identifyKey } from "./identify.js";
 import { Outbox, outboxScope } from "./outbox.js";
 import { herdr, chatTab, away, hide, show, switchView } from "./backstage.js";
-import { messageRow, authorOf, typingLine, slackTyping, dateDivider, dayKey, clock, dayLabel, programFace, userFace, shimmerText, SHIMMER_SWEEP_MS } from "./discord-look.js";
+import { messageRow, authorOf, typingLine, slackTyping, dateDivider, dayKey, clock, dayLabel, programFace, userFace, shimmerText, SHIMMER_SWEEP_MS, strong } from "./discord-look.js";
 import { threadify, lastAt, replyQuestion } from "./threads.js";
 import { quickFeed } from "./flockfeed.js";
 import { withoutEnter } from "./enter.js";
@@ -1818,7 +1818,7 @@ export default class Chat extends View {
       .on_hover(this.hover(id))
       .on_click((_e, cx) => onClick(cx))
       .child(h_flex().flex_none().gap(4).children(faces))
-      .child(div().flex_none().text_size(13).font_bold().text_color("#1d9bd1").child(label))
+      .child(div().flex_none().text_size(13).font_bold().text_color(t.accent).child(label))
       // No truncate here: its ellipsis carried into the glow's clipped bright copy and drew "…" where
       // the glow was. The text is clipped at the edge instead (shimmerBox).
       .child(h_flex().flex_1().min_w(0).overflow_hidden().whitespace_nowrap().text_size(12).text_color(t.dim)
@@ -1876,7 +1876,7 @@ export default class Chat extends View {
     const w = this.threadWidth();
     const close = (_e, cx) => { this.thread = null; this.input.focus(); cx.notify(); };
     const head = h_flex().h(49).flex_none().px(16).gap(8).items_center().border_b(1).border_color(t.border)
-      .child(div().text_size(18).font_bold().text_color(t.ansi15 ?? t.foreground).child("스레드"))
+      .child(div().text_size(18).font_bold().text_color(strong(t)).child("스레드"))
       .child(div().flex_1().min_w(0).truncate().text_size(13).text_color(t.dim).child(`#${this.slackChannel()}`))
       .child(div().id("thread-close").size(28).flex().items_center().justify_center().rounded(6).cursor_pointer()
         .text_size(18).text_color(t.muted).hover((s) => s.bg(t.raised).text_color(t.foreground)).on_click(close).child("×"));

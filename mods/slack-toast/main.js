@@ -12,6 +12,14 @@ const TOP = 104;          // 위 띠(44) + 채널 머리줄 윗줄(52) 아래
 const DEFAULT_MS = 6000;
 const DOT = { error: "blocked", warning: "working", success: "done", info: "accent" };
 
+// 제목 글자: 다크에선 흰색(ansi15), 라이트 테마(밝은 바탕)에선 본문색. ansi15 는 라이트 터미널에서 회색이다.
+function strong(t) {
+  const hex = String(t.background ?? "").replace(/^#/, "");
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const light = /^[0-9a-f]{6}/i.test(hex) && 0.299 * r + 0.587 * g + 0.114 * b > 140;
+  return light ? t.foreground : t.ansi15 ?? t.foreground;
+}
+
 export default class SlackToast extends View {
   init(_props, cx) {
     const p = props() ?? {};
@@ -42,7 +50,7 @@ export default class SlackToast extends View {
       .child(p.icon ? image(p.icon).size(28).flex_none().rounded(6)
         : div().size(10).rounded_full().flex_none().bg(t[DOT[p.level] ?? "accent"]))
       .child(v_flex().flex_1().min_w(0).gap(2)
-        .child(div().truncate().text_size(14).font_bold().text_color(t.ansi15 ?? t.foreground).child(p.title ?? ""))
+        .child(div().truncate().text_size(14).font_bold().text_color(strong(t)).child(p.title ?? ""))
         .when(Boolean(p.body), (el) => el.child(div().truncate().text_size(13).text_color(t.muted).child(String(p.body).split("\n", 1)[0]))))
       .child(div().id("slack-toast-close").size(24).flex_none().flex().items_center().justify_center().rounded(6)
         .text_size(16).text_color(t.dim).hover((s) => s.bg(t.hover).text_color(t.foreground))

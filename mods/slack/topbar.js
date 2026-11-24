@@ -2,7 +2,7 @@
 import { div } from "gpui-kit";
 import { h_flex } from "gpui-base";
 import { run, window, shared, setShared } from "herdr";
-import { GLASS, icon, white, keepPress } from "./parts.js";
+import { icon, keepPress, glass, strong } from "./parts.js";
 
 // macOS 창 버튼(layouts/slack.json 의 traffic_lights)이 앉는 왼쪽 자리.
 const LIGHTS_MACOS = 84;
@@ -11,8 +11,8 @@ const SEARCH_MAX = 820;
 
 function button(t, id, name, tip, action, size = 17) {
   return keepPress(div().id(id).size(28).flex_none().flex().items_center().justify_center().rounded(6)
-    .cursor_pointer().text_color(white(t)).opacity(0.85).tooltip(tip)
-    .hover((s) => s.bg(GLASS.hover).opacity(1)).on_click(action).child(icon(name, size)));
+    .cursor_pointer().text_color(strong(t)).opacity(0.85).tooltip(tip)
+    .hover((s) => s.bg(glass(t).hover).opacity(1)).on_click(action).child(icon(name, size)));
 }
 
 export function renderTopbar(_view, t) {
@@ -27,11 +27,11 @@ export function renderTopbar(_view, t) {
     .child(button(t, "next", "arrow-right", "다음 채널", () => run("tab.next")))
     .child(button(t, "recent", "clock", "최근 항목", () => run("mod.open", { name: "picker" })))
     .child(keepPress(h_flex().id("search").flex_1().min_w(200).max_w(SEARCH_MAX).h(30).px(10).gap(8).items_center()
-      .rounded(7).bg(GLASS.field).border_1().border_color(GLASS.line).cursor_pointer()
-      .hover((s) => s.bg(GLASS.selected)).tooltip("찾기 (⌘P)")
+      .rounded(7).bg(glass(t).field).border_1().border_color(glass(t).line).cursor_pointer()
+      .hover((s) => s.bg(glass(t).selected)).tooltip("찾기 (⌘P)")
       .on_click(() => run("mod.open", { name: "picker" }))
-      .child(div().text_color(white(t)).opacity(0.8).child(icon("search", 15)))
-      .child(div().flex_1().min_w(0).truncate().text_size(14).text_color(white(t)).opacity(0.75)
+      .child(div().text_color(strong(t)).opacity(0.8).child(icon("search", 15)))
+      .child(div().flex_1().min_w(0).truncate().text_size(14).text_color(strong(t)).opacity(0.75)
         .child("무엇을 찾고 있는지 설명해 주세요"))))
     .child(div().flex_1().min_w(8))
     .child(button(t, "help", "help", "단축키 도움말", () => run("app.help"), 19));

@@ -3,8 +3,8 @@
 import { div } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
 import { props, closeOverlay } from "herdr";
-import { PRESETS, slackTheme, setSlackTheme, applyBackground, pickColor, isHex, normHex } from "./theme.js";
-import { icon, white } from "./parts.js";
+import { PRESETS, APPEARANCES, slackTheme, setSlackTheme, applyBackground, pickColor, isHex, normHex, readAppearance, setAppearance } from "./theme.js";
+import { icon, strong } from "./parts.js";
 
 const FIELDS = [
   { key: "nav", label: "시스템 탐색" },
@@ -14,9 +14,9 @@ const FIELDS = [
 ];
 const BG_DELAY_MS = 500;
 
-export const themeOverlay = () => ({ mod: "slack", kind: "dialog", width: 560, height: 520, props: { view: "theme" } });
+export const themeOverlay = () => ({ mod: "slack", kind: "dialog", width: 560, height: 600, props: { view: "theme" } });
 
-export function initThemePanel(view, cx) {
+export function initThemePanel(view, _cx) {
   const theme = slackTheme();
   view.colorInputs = {};
   view.bgTicket = 0;
@@ -53,6 +53,18 @@ export function initThemePanel(view, cx) {
     view.colorInputs[key].set_value(hex);
     view.setColor(key, hex, cx3);
   });
+  // 화면 모드: settings() 에서 읽어 오고, 고르면 settings.json 에 쓴다(창은 보여 주기만 한다).
+  view.appearance = readAppearance();
+  view.useAppearance = (id, cx2) => {
+    const before = view.appearance;
+    view.appearance = id;
+    cx2.notify();
+    cx2.spawn(async (cx3) => {
+      if (await setAppearance(id)) return;
+      view.appearance = before;
+      cx3.notify();
+    });
+  };
   view.toggleGradient = (cx2) => {
     setSlackTheme({ gradient: !slackTheme().gradient });
     view.scheduleBackground(cx2);
@@ -71,7 +83,7 @@ export function renderThemePanel(view, t) {
   const p = props() ?? {};
   const theme = slackTheme();
   const close = () => closeOverlay(p.overlay);
-  const label = (text) => div().pt(14).pb(8).text_size(13).font_bold().text_color(white(t)).child(text);
+  const label = (text) => div().pt(14).pb(8).text_size(13).font_bold().text_color(strong(t)).child(text);
   const presetChip = (preset) => {
     const on = theme.preset === preset.id;
     return h_flex().id(`preset-${preset.id}`).w(160).h(40).px(8).gap(8).items_center().rounded(8).cursor_pointer()
@@ -79,22 +91,34 @@ export function renderThemePanel(view, t) {
       .hover((s) => s.border_color(t.accent))
       .on_click((_e, cx) => view.usePreset(preset, cx))
       .child(twoTone(preset.nav, preset.selected, 24))
-      .child(div().flex_1().min_w(0).truncate().text_size(13).text_color(on ? white(t) : t.muted).child(preset.name));
+      .child(div().flex_1().min_w(0).truncate().text_size(13).text_color(on ? strong(t) : t.muted).child(preset.name));
+  };
+  const fit = (n) => n * 120 + (n - 1) * 3 + 6;
+  const appearanceChip = (a) => {
+    const on = view.appearance === a.id;
+    return div().id(`appearance-${a.id}`).w(120).h(32).flex().items_center().justify_center().rounded(6).cursor_pointer()
+      .text_size(13).font_bold().text_color(on ? strong(t) : t.muted)
+      .when(on, (el) => el.bg(t.popover).shadow_sm())
+      .when(!on, (el) => el.hover((s) => s.text_color(strong(t))))
+      .on_click((_e, cx) => view.useAppearance(a.id, cx))
+      .child(a.name);
   };
   const colorField = (f) => h_flex().w(248).h(40).px(8).gap(8).items_center().rounded(20)
     .border_1().border_color(theme[f.key]).bg(`${theme[f.key]}33`)
     .child(div().size(24).flex_none().rounded_full().bg(theme[f.key]).border_1().border_color("#ffffff40"))
     .child(div().flex_1().min_w(0).child(Input.new(view.colorInputs[f.key]).h(28).px(4).border_0().bg("#00000000")
-      .text_size(14).text_color(white(t))))
+      .text_size(14).text_color(strong(t))))
     .child(div().id(`pick-${f.key}`).size(28).flex_none().flex().items_center().justify_center().rounded_full()
-      .cursor_pointer().text_color(t.muted).tooltip("색 고르기").hover((s) => s.bg(t.hover).text_color(white(t)))
+      .cursor_pointer().text_color(t.muted).tooltip("색 고르기").hover((s) => s.bg(t.hover).text_color(strong(t)))
       .on_click((_e, cx) => view.pick(f.key, cx)).child(icon("square-pen", 15)));
   return v_flex().id("theme-panel").size_full().p(20).bg(t.popover)
     .on_key_down((e, cx) => { if (e.key === "escape") { close(); cx.stop_propagation(); } })
     .child(h_flex().items_center()
-      .child(div().flex_1().text_size(20).font_bold().text_color(white(t)).child("테마"))
+      .child(div().flex_1().text_size(20).font_bold().text_color(strong(t)).child("테마"))
       .child(div().id("theme-close").size(28).flex().items_center().justify_center().rounded(6).cursor_pointer()
-        .text_size(18).text_color(t.muted).hover((s) => s.bg(t.hover).text_color(white(t))).on_click(close).child("×")))
+        .text_size(18).text_color(t.muted).hover((s) => s.bg(t.hover).text_color(strong(t))).on_click(close).child("×")))
+    .child(label("화면 모드"))
+    .child(h_flex().w(fit(3)).p(3).gap(3).rounded(8).bg(t.raised).children(APPEARANCES.map(appearanceChip)))
     .child(label("기본 테마"))
     .child(h_flex().flex_wrap().gap(8).children(PRESETS.map(presetChip)))
     .child(label(theme.preset === "custom" ? "사용자 지정 (지금 쓰는 색)" : "사용자 지정"))
@@ -106,8 +130,8 @@ export function renderThemePanel(view, t) {
       .on_click((_e, cx) => view.toggleGradient(cx))
       .child(div().size(18).mt(1).flex_none().rounded(4).flex().items_center().justify_center()
         .border_1().border_color(theme.gradient ? t.accent : t.input).bg(theme.gradient ? t.accent : "#00000000")
-        .text_size(12).text_color(white(t)).child(theme.gradient ? "✓" : ""))
+        .text_size(12).text_color(t.accent_foreground).child(theme.gradient ? "✓" : ""))
       .child(v_flex().gap(2)
-        .child(div().text_size(14).font_bold().text_color(white(t)).child("창 그라데이션"))
+        .child(div().text_size(14).font_bold().text_color(strong(t)).child("창 그라데이션"))
         .child(div().text_size(12).text_color(t.dim).child("창 배경에서 시스템 탐색과 선택된 항목 색상을 함께 혼합합니다."))));
 }

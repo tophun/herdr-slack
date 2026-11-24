@@ -7,7 +7,7 @@ import { div, svg, image } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, Popup, ScrollHandle } from "gpui-base";
 import { props, spaces, panes, home, knownAgents, pickFolder, run, exec, closeOverlay, notify, shared, setShared } from "herdr";
 import * as fs from "fs/promises";
-import { white, icon } from "./parts.js";
+import { strong, icon } from "./parts.js";
 import { nameFromMessage } from "./look.js";
 import { workspace, setWorkspace } from "./workspace.js";
 
@@ -168,8 +168,10 @@ export function initNewChannel(view, cx) {
 
 function programIcon(t, program) {
   const box = div().size(22).flex_none().rounded(5).flex().items_center().justify_center().bg(program?.tile ?? t.raised);
-  if (!program?.icon) return box.child(svg("mods/slack/terminal.svg").size(14).text_color(white(t)));
-  return box.child(program.tint ? svg(program.icon).size(14).text_color(program.color ?? white(t)) : image(program.icon).size(14));
+  // 프로그램 색 칸 위면 흰 글자, 칸이 없어 회색(raised) 위면 카드 글자색.
+  const ink = program?.tile ? t.accent_foreground : strong(t);
+  if (!program?.icon) return box.child(svg("mods/slack/terminal.svg").size(14).text_color(ink));
+  return box.child(program.tint ? svg(program.icon).size(14).text_color(program.color ?? ink) : image(program.icon).size(14));
 }
 
 // 작업 폴더 칸 아래에 뜨는 후보 목록. Popup 은 창의 다른 내용보다 위 레이어에 그리고
@@ -196,7 +198,7 @@ function dirDropdown(view, t, list) {
         .on_click((_e, cx) => view.chooseDir(path, cx))
         .child(div().text_color(t.dim).child(icon("folder", 18)))
         .child(v_flex().flex_1().min_w(0)
-          .child(line(div().text_size(14).text_color(white(t))).child(tilde(path)))
+          .child(line(div().text_size(14).text_color(strong(t))).child(tilde(path)))
           .child(line(div().text_size(12).text_color(t.dim)).child(path)));
     }));
 }
@@ -204,12 +206,12 @@ function dirDropdown(view, t, list) {
 export function renderNewChannel(view, t) {
   const p = props() ?? {};
   const close = () => closeOverlay(p.overlay);
-  const label = (text) => div().pt(8).pb(4).text_size(13).font_bold().text_color(white(t)).child(text);
+  const label = (text) => div().pt(8).pb(4).text_size(13).font_bold().text_color(strong(t)).child(text);
   const chip = (a) => {
     const on = (view.choice?.key ?? null) === a.key;
     return h_flex().id(`agent-${a.key}`).h(34).px(10).gap(8).items_center().rounded(6).cursor_pointer()
       .border_1().border_color(on ? t.accent : t.input).bg(on ? "#1d9bd122" : t.background)
-      .text_size(14).font_medium().text_color(on ? white(t) : t.muted).hover((s) => s.border_color(t.accent))
+      .text_size(14).font_medium().text_color(on ? strong(t) : t.muted).hover((s) => s.border_color(t.accent))
       .on_click((_e, cx) => { view.choice = a; cx.notify(); })
       .child(programIcon(t, a.key === "terminal" ? null : a)).child(div().child(a.name));
   };
@@ -231,7 +233,7 @@ export function renderNewChannel(view, t) {
         cx.notify();
       }
     })
-    .child(div().pb(4).text_size(20).font_bold().text_color(white(t)).child(p.scope === "space" ? "새 채널" : "새 세션 (이 채널에 탭 추가)"))
+    .child(div().pb(4).text_size(20).font_bold().text_color(strong(t)).child(p.scope === "space" ? "새 채널" : "새 세션 (이 채널에 탭 추가)"))
     .child(label("에이전트"))
     .child(h_flex().gap(8).flex_wrap()
       .when(view.agents === null, (el) => el.child(div().h(34).flex().items_center().text_size(13).text_color(t.dim).child("설치된 에이전트를 찾는 중…")))

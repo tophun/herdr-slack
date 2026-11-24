@@ -4,7 +4,7 @@ import { div, image } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { run, openOverlay, shared, setShared, layout } from "herdr";
 import { initials } from "./look.js";
-import { VIEW_KEY, sidebarView, GLASS, icon, white, mentionBadge } from "./parts.js";
+import { VIEW_KEY, sidebarView, icon, mentionBadge, glass, strong } from "./parts.js";
 import { isImagePath, setWorkspaceImage, profile } from "./spaceimage.js";
 import { workspace } from "./workspace.js";
 import { workspaceMenuOverlay } from "./sectionmenu.js";
@@ -35,7 +35,7 @@ function workspaceTile(view, t) {
   const face = ws.image
     ? image(ws.image).size(TILE).flex_none().rounded(10)
     : div().size(TILE).flex_none().rounded(10).flex().items_center().justify_center()
-      .bg("#e8a723").text_color(white(t)).text_size(TEXT_SIZE[Array.from(text).length] ?? 13).font_bold().child(text);
+      .bg("#e8a723").text_color(t.accent_foreground).text_size(TEXT_SIZE[Array.from(text).length] ?? 13).font_bold().child(text);
   return h_flex().id("workspace-tile").w(WIDTH).h(TILE + 8).flex_none().justify_center().items_center()
     .tooltip(`${ws.name} · 오른쪽 클릭: 이름·그림 바꾸기`)
     .child(div().id("workspace-face").cursor_pointer()
@@ -53,16 +53,16 @@ function navButton(t, id, iconName, label, on, badge, action) {
   return v_flex().id(`nav-${id}`).w(WIDTH).flex_none().items_center().gap(3).cursor_pointer()
     .on_click(action)
     .child(div().relative().size(NAV).flex().items_center().justify_center().rounded(10)
-      .bg(on ? GLASS.selected : "#00000000").text_color(white(t))
-      .hover((s) => s.bg(on ? GLASS.selected : GLASS.hover))
+      .bg(on ? glass(t).selected : "#00000000").text_color(strong(t))
+      .hover((s) => s.bg(on ? glass(t).selected : glass(t).hover))
       .child(icon(iconName, 20))
       .when(badge > 0, (el) => el.child(div().absolute().right(-7).top(-6).child(mentionBadge(t, badge)))))
-    .child(div().text_size(11).font_bold().text_color(white(t)).child(label));
+    .child(div().text_size(11).font_bold().text_color(strong(t)).child(label));
 }
 
 function roundButton(t, id, iconName, tip, action) {
   return div().id(id).size(NAV).flex_none().flex().items_center().justify_center().rounded_full()
-    .bg(GLASS.field).text_color(white(t)).cursor_pointer().tooltip(tip).hover((s) => s.bg(GLASS.selected))
+    .bg(glass(t).field).text_color(strong(t)).cursor_pointer().tooltip(tip).hover((s) => s.bg(glass(t).selected))
     .on_click(action).child(icon(iconName, 19));
 }
 
@@ -75,8 +75,8 @@ function me(t) {
     .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay(profileMenuOverlay()); })
     .child(picture ? image(picture).size(NAV).rounded(8)
       : div().size(NAV).rounded(8).flex().items_center().justify_center().bg("#5b5fc7")
-        .text_size(15).font_bold().text_color(white(t)).child(Array.from(name)[0]?.toUpperCase() ?? "?"))
-    .child(div().absolute().right(-3).bottom(-3).size(13).rounded_full().bg(GLASS.ring)
+        .text_size(15).font_bold().text_color(t.accent_foreground).child(Array.from(name)[0]?.toUpperCase() ?? "?"))
+    .child(div().absolute().right(-3).bottom(-3).size(13).rounded_full().bg(glass(t).ring)
       .flex().items_center().justify_center().child(div().size(9).rounded_full().bg(slackTheme().presence)));
 }
 

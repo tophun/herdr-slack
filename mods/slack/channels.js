@@ -13,7 +13,7 @@ import { workspace } from "./workspace.js";
 import { slackTheme } from "./theme.js";
 import { visibleSpaces, visibleAgents } from "./demo.js";
 import { repoPending } from "./repos.js";
-import { VIEW_KEY, sidebarView, GLASS, icon, white, programAvatar, withStatusDot, mentionBadge } from "./parts.js";
+import { VIEW_KEY, sidebarView, icon, programAvatar, withStatusDot, mentionBadge, glass, strong } from "./parts.js";
 
 const HEADER_HEIGHT = 52;
 const ROW_HEIGHT = 28;
@@ -28,7 +28,7 @@ const openPicker = () => run("mod.open", { name: "picker" });
 
 function iconButton(t, id, name, tip, action) {
   return div().id(id).size(30).flex_none().flex().items_center().justify_center().rounded(6)
-    .text_color(white(t)).cursor_pointer().tooltip(tip).hover((s) => s.bg(GLASS.hover))
+    .text_color(strong(t)).cursor_pointer().tooltip(tip).hover((s) => s.bg(glass(t).hover))
     .on_click(action).child(icon(name, 18));
 }
 
@@ -36,27 +36,27 @@ function header(t, title, onTitle) {
   return h_flex().id("sidebar-header").h(HEADER_HEIGHT).flex_none().pl(16).pr(8).gap(2).items_center()
     .child(h_flex().id("ws-title").flex_1().min_w(0).gap(4).items_center()
       .when(Boolean(onTitle), (el) => el.cursor_pointer().on_click(onTitle).tooltip("워크스페이스 메뉴 (이름 · 그림 바꾸기)"))
-      .child(div().min_w(0).truncate().text_size(18).font_bold().text_color(white(t)).child(title))
-      .when(Boolean(onTitle), (el) => el.child(div().text_color(white(t)).child(icon("chevron-down", 16)))))
+      .child(div().min_w(0).truncate().text_size(18).font_bold().text_color(strong(t)).child(title))
+      .when(Boolean(onTitle), (el) => el.child(div().text_color(strong(t)).child(icon("chevron-down", 16)))))
     .child(iconButton(t, "settings", "settings", "설정", () => run("app.settings")))
     .child(iconButton(t, "compose", "square-pen", "새 채널 (작업 폴더에서 에이전트 시작)", () => openOverlay(NEW_MENU)));
 }
 
 function findBox(t, label) {
   return h_flex().id("find").mx(12).mb(6).h(28).flex_none().px(8).gap(8).items_center().rounded(6)
-    .bg(GLASS.field).border_1().border_color(GLASS.line).cursor_pointer().hover((s) => s.bg(GLASS.selected))
+    .bg(glass(t).field).border_1().border_color(glass(t).line).cursor_pointer().hover((s) => s.bg(glass(t).selected))
     .on_click(openPicker)
-    .child(div().text_color(white(t)).opacity(0.8).child(icon("search-text", 15)))
-    .child(div().flex_1().truncate().text_size(14).text_color(white(t)).opacity(0.75).child(label));
+    .child(div().text_color(strong(t)).opacity(0.8).child(icon("search-text", 15)))
+    .child(div().flex_1().truncate().text_size(14).text_color(strong(t)).opacity(0.75).child(label));
 }
 
 // 한 줄(빠른 메뉴 · 채널 · DM 공통 틀). 고르면 흰 반투명, 안 본 것은 굵은 흰 글씨.
 function row(t, id, { selected, bright, children, onClick, onRight, onDouble, indent = 10 }) {
   return h_flex().id(id).mx(8).h(ROW_HEIGHT).flex_none().pl(indent).pr(10).gap(8).items_center().rounded(6).cursor_pointer()
-    .text_size(15).text_color(selected || bright ? white(t) : t.muted)
+    .text_size(15).text_color(selected ? t.accent_foreground : bright ? strong(t) : t.muted)
     .when(bright || selected, (el) => el.font_bold())
     .when(selected, (el) => el.bg(slackTheme().selected))
-    .when(!selected, (el) => el.hover((s) => s.bg(GLASS.hover)))
+    .when(!selected, (el) => el.hover((s) => s.bg(glass(t).hover)))
     .when(Boolean(onDouble), (el) => el.on_mouse_down("left", (e) => { if (e.click_count === 2) onDouble(); }))
     .on_click(onClick)
     .when(Boolean(onRight), (el) => el.on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); onRight(); }))
@@ -78,7 +78,7 @@ function section(view, t, spaceId, id, label, { onMenu = null, emoji = null } = 
   const hovered = view?.hoverSection === id;
   const caret = icon(collapsed ? "chevron-right" : "chevron-down", 14);
   return h_flex().id(`sec-${id}`).h(ROW_HEIGHT).mt(14).mx(8).px(8).gap(10).items_center().flex_none().rounded(6)
-    .text_size(15).text_color(t.muted).cursor_pointer().hover((s) => s.bg(GLASS.hover))
+    .text_size(15).text_color(t.muted).cursor_pointer().hover((s) => s.bg(glass(t).hover))
     .when(Boolean(emoji) && Boolean(view), (el) => el.on_hover((on, cx) => {
       const next = on ? id : view.hoverSection === id ? null : view.hoverSection;
       if (next !== view.hoverSection) { view.hoverSection = next; cx.notify(); }
@@ -129,7 +129,7 @@ function dmRow(t, a) {
     bright: a.focused || a.status === "blocked" || a.status === "done",
     onClick: () => focusAgent(a),
     children: [
-      withStatusDot(t, programAvatar(t, a.program, 20), 20, a.status, GLASS.ring),
+      withStatusDot(t, programAvatar(t, a.program, 20), 20, a.status, glass(t).ring),
       div().flex_1().min_w(0).truncate().child(agentName(a)),
       a.status === "blocked" ? mentionBadge(t, 1) : null,
     ].filter(Boolean),
@@ -138,8 +138,8 @@ function dmRow(t, a) {
 
 function addRow(t, id, label, action) {
   return h_flex().id(id).mx(8).h(ROW_HEIGHT).flex_none().pl(16).pr(10).gap(8).items_center().rounded(6).cursor_pointer()
-    .text_size(15).text_color(t.muted).hover((s) => s.bg(GLASS.hover)).on_click(action)
-    .child(div().size(20).flex_none().rounded(5).bg(GLASS.field).flex().items_center().justify_center().child(icon("plus", 14)))
+    .text_size(15).text_color(t.muted).hover((s) => s.bg(glass(t).hover)).on_click(action)
+    .child(div().size(20).flex_none().rounded(5).bg(glass(t).field).flex().items_center().justify_center().child(icon("plus", 14)))
     .child(div().child(label));
 }
 
@@ -172,7 +172,7 @@ function homeList(view, t, space) {
       .child(quickLink(t, "unread", "inbox", "읽지 않은 항목", attention, go("activity")))
       .child(quickLink(t, "dms", "message-square", "다이렉트 메시지", 0, go("dms")))
       .child(quickLink(t, "directory", "book-user", "디렉터리", 0, openPicker))
-      .child(div().mx(16).my(10).h(1).flex_none().bg(GLASS.line))
+      .child(div().mx(16).my(10).h(1).flex_none().bg(glass(t).line))
       .children(groups.custom.flatMap((sec) => [
         section(view, t, SCOPE, sec.id, sec.name, { onMenu: () => openOverlay(sectionMenuOverlay(sec.id)), emoji: sec.emoji }),
         ...shownIn(sec.id, sec.items).map((s) => channelRow(t, s, all, repoName(s), names)),
@@ -193,13 +193,13 @@ function homeList(view, t, space) {
 function agentCard(t, a, now, since) {
   const sub = `${agentSubtitle(a.status, since, now)} · ${a.space_name} · #${a.tab_name}`;
   return h_flex().id(`card-${a.address}`).mx(8).h(CARD_HEIGHT).flex_none().px(10).gap(10).items_center().rounded(8).cursor_pointer()
-    .when(a.focused, (el) => el.bg(GLASS.selected))
-    .when(!a.focused, (el) => el.hover((s) => s.bg(GLASS.hover)))
+    .when(a.focused, (el) => el.bg(glass(t).selected))
+    .when(!a.focused, (el) => el.hover((s) => s.bg(glass(t).hover)))
     .on_click(() => focusAgent(a))
-    .child(withStatusDot(t, programAvatar(t, a.program, 36), 36, a.status, GLASS.ring))
+    .child(withStatusDot(t, programAvatar(t, a.program, 36), 36, a.status, glass(t).ring))
     .child(v_flex().flex_1().min_w(0).gap(2)
-      .child(div().truncate().text_size(15).font_bold().text_color(white(t)).child(agentName(a)))
-      .child(div().truncate().text_size(13).text_color(a.status === "blocked" ? "#ff8fb1" : t.muted).child(sub)));
+      .child(div().truncate().text_size(15).font_bold().text_color(strong(t)).child(agentName(a)))
+      .child(div().truncate().text_size(13).text_color(a.status === "blocked" ? (glass(t).blockedText ?? t.blocked) : t.muted).child(sub)));
 }
 
 function agentList(t, title, list, empty) {
@@ -215,7 +215,7 @@ function agentList(t, title, list, empty) {
 
 export function renderChannels(view, t, forced = null) {
   const mode = forced ?? sidebarView(shared);
-  const shell = (child) => v_flex().id("sidebar").size_full().bg(GLASS.sidebar).child(child);
+  const shell = (child) => v_flex().id("sidebar").size_full().bg(glass(t).sidebar).child(child);
   if (mode === "dms") {
     return shell(agentList(t, "다이렉트 메시지", [...visibleAgents()].sort((a, b) => b.seq - a.seq),
       "아직 에이전트가 없어요. 오른쪽 위 연필을 눌러 Claude 를 시작해 보세요."));

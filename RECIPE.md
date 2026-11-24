@@ -2,7 +2,7 @@
 
 Herdr dressed as the Slack desktop app. A gradient window frame holds a workspace rail, a sidebar where
 each git repository is a section and each checkout or worktree (a Herdr space) is a channel, and a
-dark main card. Each channel's agent sessions are tabs under the channel header, and an agent tab opens
+main card that follows the system's light or dark mode. Each channel's agent sessions are tabs under the channel header, and an agent tab opens
 as a Slack-style conversation by default. In it, the turn's tool runs fold into a "N개의 댓글" thread, a
 reply can take side questions in a thread, the composer has Slack's formatting bar, and a glowing
 "Claude Code 님이 입력 중…" line runs while the agent works. Themes are Slack's: pick a preset or set
@@ -92,7 +92,8 @@ starts again from the left. It moves only while the agent works and the chat is 
   and a first message. With a folder you get a new space; without one, a tab in **#일반** (the home
   folder's space, created if missing). The header's + opens the same dialog for a new tab in this
   channel.
-- The moon opens **테마**. It has 7 presets (크림슨 미드나잇, 오버진, 제이드, 라군, 바바라, 무드 인디고,
+- The moon opens **테마**. 화면 모드 (시스템 · 라이트 · 다크) at the top writes `appearance` in Herdr's
+  `settings.json` (시스템 removes it), the only place that choice lives; the whole window follows. It has 7 presets (크림슨 미드나잇, 오버진, 제이드, 라군, 바바라, 무드 인디고,
   그래파이트) and four colors to set as hex or with the macOS color picker: 시스템 탐색 (window), 선택된
   항목 (current channel, gradient end), 현재 상태 (presence) and 알림 (badges). A checkbox turns the
   window gradient on or off. Changes apply at once; the background is redrawn 0.5s after the last
@@ -121,8 +122,11 @@ starts again from the left. It moves only while the agent works and the chat is 
 
 **Layout** `layouts/slack.json`
 - Root `column`:
-  - `theme: "graphite"` plus `colors` for every theme color and ansi0–15 (`background #1a1d21`,
-    `foreground #d1d2d3`, `selected #1164a3`, `accent #1d9bd1`, `solid #007a5a`, …).
+  - `theme: {light: "slack-light", dark: "slack-dark"}`: follows the system's appearance (or
+    settings.json's `appearance`). The colors live in `themes/slack-dark.json` (`background #1a1d21`,
+    `foreground #d1d2d3`, `selected #1164a3`, `accent #1d9bd1`, …) and `themes/slack-light.json`
+    (`background #ffffff`, `foreground #1d1c1d`, `accent #1264a3`, …), not in the layout: a layout's
+    `colors` apply in both appearances.
   - `ui_font: "Lato"`, `terminal_padding: [10, 16]`, `titlebar: "none"`, `traffic_lights: [18, 16]`,
     `toast: "slack-toast"`, `preview: "layouts/slack.svg"`.
   - `background`: a color or an image that `mods/slack/theme.js` writes into this file.
@@ -189,6 +193,15 @@ starts again from the left. It moves only while the agent works and the chat is 
   - Files it writes: `layouts/slack.json` (the theme background), `backgrounds/slack-*.png`,
     `data/slack/` (pictures) and `data/slack-chat/` (sidecar cache).
   - No network access, apart from what Chat Plus does for Claude and Codex.
+- **Light and dark**: the whole window follows. In light, the window background is the theme's colors
+  mixed 86% with white (`windowColors` in `theme.js`), the bar, rail and sidebar use dark text and
+  dark-on-light glass (`glass(t)` in `parts.js`), and the card border turns dark. The selected
+  channel keeps the theme's selected color with white text. The layout file holds one background, so
+  the rail checks `isLight(theme())` every 0.3s and calls `applyBackground` again when it flips.
+  Text: `strong(t)` for the brightest text (`ansi15` in dark, `foreground` in light, where
+  `ansi15` is a terminal grey), `t.muted`/`t.dim`, and `t.accent_foreground` on filled tiles and
+  badges. `isLight(t)` reads the background's brightness; `slack-chat` and `slack-toast` keep their
+  own copy, since mods don't import each other.
 - `layout.set` sent from a mod did not change the root background, so `theme.js` rewrites
   `layouts/slack.json` instead.
 - A `loop` animation runs on a clock every view shares and goes there and back; a new element id does
@@ -227,5 +240,7 @@ starts again from the left. It moves only while the agent works and the chat is 
   - A "N개의 댓글" link appears under its reply, with the current action glowing left to right.
   - Clicking the link opens the thread pane with the turn's tool runs.
 - The moon → 라군 turns the window to the Lagoon gradient and the current channel to `#2C7BB6`.
+- In light mode the whole window is light: a light tint of the theme behind a white card, dark text in
+  the bar, rail and sidebar. Switching the system to dark repaints the window as before.
 - The pen with an empty folder and a first message adds a tab to #일반 named after the message.
 - A finished agent's notification appears at the top right.

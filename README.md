@@ -16,6 +16,7 @@ git clone https://github.com/yurseria/herdr-slack
 cd herdr-slack
 cp -R mods/* ~/.config/herdr-app/mods/
 cp layouts/slack.json layouts/slack.svg ~/.config/herdr-app/layouts/
+mkdir -p ~/.config/herdr-app/themes && cp themes/*.json ~/.config/herdr-app/themes/
 herdr-app do layout.switch '{"name":"slack"}'
 ```
 
