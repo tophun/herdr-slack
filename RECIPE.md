@@ -109,6 +109,8 @@ starts again from the left. It moves only while the agent works and the chat is 
 - Escape closes an open thread first, otherwise stops the agent's turn.
 - Sending while the agent is asking closes its question (Escape to the terminal), then sends.
 - What you're typing survives the chat reloading.
+- Enter with the cursor inside the text sends it as one line: the line break the box puts at the
+  cursor before the send is dropped. A line break typed with Shift+Enter stays.
 - Only the newest 12 messages are drawn; scrolling to the top loads 12 more, and returning to the
   bottom trims back. This keeps typing light in long conversations.
 - Long conversations first show a quick preview from the Flockbook sidecar (about 0.1s), then the
@@ -162,7 +164,8 @@ starts again from the left. It moves only while the agent works and the chat is 
   - Lucide icons as svg; Lato fonts in `fonts/` (SIL OFL).
 - `mods/slack-chat`: the conversation, from Herdr Chat Plus (MIT, see its `LICENSE` and `NOTICE.md`).
   The Slack parts: `discord-look.js` (message rows, date pills, typing line, glow), `threads.js`,
-  `flockfeed.js` and `bin/flockbook-modfeed` (Flockbook's sidecar, MIT), and changes in `main.js`,
+  `flockfeed.js` and `bin/flockbook-modfeed` (Flockbook's sidecar, MIT), `enter.js` (Flockbook's
+  `withoutEnter`: drops the line break Enter puts at the cursor before a send), and changes in `main.js`,
   `parse.js` (message times) and `session.js` (new Codex logs).
 - `mods/slack-chat-file`: the editor and image dialog behind `/memory`, `/config` and file previews
   (from Chat Plus).

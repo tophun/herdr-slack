@@ -10,3 +10,5 @@
   Flockbook (github.com/minchenlee/flockbook), included unchanged. MIT License,
   Copyright (c) 2026 Minchen Lee — see `bin/LICENSE-flockbook`. Built for macOS (Intel and Apple Silicon);
   elsewhere the chat skips it and reads the log the usual way.
+- **Enter's stray line break**: `enter.js` (`withoutEnter`) is copied from Flockbook's
+  `mods/flockbook/composer.js`, MIT License, Copyright (c) 2026 Minchen Lee — see `bin/LICENSE-flockbook`.

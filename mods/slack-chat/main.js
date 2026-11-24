@@ -45,6 +45,7 @@ import { herdr, chatTab, away, hide, show, switchView } from "./backstage.js";
 import { messageRow, authorOf, typingLine, slackTyping, dateDivider, dayKey, clock, dayLabel, programFace, userFace, shimmerText, SHIMMER_SWEEP_MS } from "./discord-look.js";
 import { threadify, lastAt, replyQuestion } from "./threads.js";
 import { quickFeed } from "./flockfeed.js";
+import { withoutEnter } from "./enter.js";
 
 const ASK_FIRST = "Answer the question above first.";
 // After Escape closes the agent's question, how long to wait before typing the message (ms).
@@ -377,7 +378,9 @@ export default class Chat extends View {
     // Code that clears or fills the box (after sending, picking a command) may not fire "change":
     // keep the saved draft in step with every set_value too.
     const setValue = this.input.set_value.bind(this.input);
-    this.input.set_value = (next) => { setValue(next); this.saveDraft?.(); };
+    this.input.set_value = (next) => { setValue(next); this.typed = [String(next ?? ""), String(next ?? "")]; this.saveDraft?.(); };
+    // The last two texts the box reported, so a send knows the text before Enter's new line (enter.js).
+    this.typed = ["", ""];
     try {
       const saved = this.draftKey ? localStorage.getItem(this.draftKey) : null;
       if (saved) {
@@ -390,6 +393,8 @@ export default class Chat extends View {
     this.input.on("focus", (_e, cx) => { this.inputFocused = true; cx.notify(); });
     this.input.on("blur", (_e, cx) => { this.inputFocused = false; cx.notify(); });
     this.input.on("change", (_e, cx) => {
+      const typedNow = this.input.value();
+      if (typedNow !== this.typed[1]) this.typed = [this.typed[1], typedNow];
       if (!this.settingHistory) this.historyIdx = null;
       this.emojifyInput();
       this.updateEmoji(cx);
@@ -3049,7 +3054,9 @@ export default class Chat extends View {
     const em = this.emojiMenu();
     if (em) return this.pickEmoji(em.items[em.sel], cx);
     if (this.panelLive()) { this.input.set_value(""); this.panelKeys("enter"); return cx.notify(); }
-    const text = emojify(this.input.value().trim());
+    // Enter with the cursor inside the text put a line break there before this send: drop it (enter.js).
+    const now = this.input.value();
+    const text = emojify(withoutEnter(now, now === this.typed[1] ? this.typed[0] : this.typed[1]).trim());
     const cmd = this.dialog ? null : this.typedCommand();
     if (cmd) this.used(cmd.name);
     // /btw and /side never reach the agent: they open the side chat.
