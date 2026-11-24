@@ -41,8 +41,8 @@ gradient from the top-left corner, `#9C0000` to `#070C52`.
       for you shows a count badge in the theme's notify color; a working one, a pulsing green dot.
   - **Channel header** (92px, `#1a1d21`, 1px `#35373b` bottom line)
     - Top row: "# channel ⌄" (18px bold), the channel description in 13px `#ababad` (the agent's
-      session title, or folder · branch), then a 채팅 | 터미널 switch, an agent count, split, search
-      and ⋮.
+      session title, or folder · branch), then a 채팅 | 터미널 switch, an agent count, split (terminal
+      view only; the chat is one conversation, nothing to split), search and ⋮.
     - Tab row: each of the channel's sessions as a tab (program icon + session title, white with a 2px
       underline when chosen), then 파일 및 링크, then +.
   - **Conversation** (`#1a1d21`)
